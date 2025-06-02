@@ -1,5 +1,7 @@
 package chat.datos;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class UsuarioCliente implements Protocolable {
@@ -37,7 +39,24 @@ public class UsuarioCliente implements Protocolable {
     @Override
     public String convertirAProtocolo() {
         return """
+                tipo: registro
                 uuid: %s
                 nombre: %s""".formatted(uuid, nombre);
+    }
+
+    public static List<UsuarioCliente> convertirDeRespuestaLista(String protocolo){
+        List<UsuarioCliente> usuarios = new ArrayList<>();
+        String[] lineas = protocolo.split(";\n");
+        for (String linea : lineas) {
+            UUID uuid = UUID.fromString(linea.split(",")[0]);
+            String nombre = linea.split(",")[1];
+            usuarios.add(new UsuarioCliente(nombre, uuid));
+        }
+        return usuarios;
+    }
+
+    @Override
+    public String toString() {
+        return "[nombre: " + this.nombre + ", uuid: " + this.uuid + "]";
     }
 }

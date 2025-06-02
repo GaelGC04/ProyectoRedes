@@ -3,6 +3,7 @@ package chat.servidor;
 import chat.datos.UsuarioServidor;
 
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.UUID;
@@ -22,6 +23,7 @@ public class ManejadorTCP implements Runnable {
                 String protocolo = entrada.readUTF();
                 String tipoPeticion = protocolo.split("\n", 2)[0];
                 protocolo = protocolo.substring(protocolo.indexOf("\n") + 1);
+                System.out.println("tipoPeticion: " + tipoPeticion);
                 switch (tipoPeticion) {
                     case "tipo: registro" -> manejarRegistro(protocolo);
                     case "tipo: archivo" -> manejarMensajeArchivo(protocolo);
@@ -54,6 +56,21 @@ public class ManejadorTCP implements Runnable {
     }
 
     private void manejarListaUsuarios(String protocolo) {
+        System.out.println("Obteniendo usuarios...");
+        String[] lineas = protocolo.split("\n");
+        UUID uid = UUID.fromString(lineas[0].split(": ")[1]);
 
+        var listaUsuarios = ControladorSesiones.getInstance().obtenerUsuarios(uid);
+        var protocoloUsuarios = "";
+        for (UsuarioServidor usuario : listaUsuarios) {
+            protocoloUsuarios += (usuario.uuid()+","+usuario.nombre()+";\n");
+        }
+
+        try {
+            DataOutputStream dataOutputStream = new DataOutputStream(this.socketCliente.getOutputStream());
+            dataOutputStream.writeUTF(protocoloUsuarios);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
