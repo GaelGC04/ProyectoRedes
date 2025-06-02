@@ -22,7 +22,6 @@ public class ManejadorTCP implements Runnable {
                 String protocolo = entrada.readUTF();
                 String tipoPeticion = protocolo.split("\n", 2)[0];
                 protocolo = protocolo.substring(protocolo.indexOf("\n") + 1);
-                System.out.println("tipoPeticion: " + tipoPeticion);
                 switch (tipoPeticion) {
                     case "tipo: registro" -> manejarRegistro(protocolo);
                     case "tipo: archivo" -> manejarMensajeArchivo(protocolo);

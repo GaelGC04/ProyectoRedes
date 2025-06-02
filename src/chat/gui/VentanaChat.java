@@ -14,15 +14,15 @@ public class VentanaChat extends JFrame {
     private JButton botonEnviar;
 
     private UsuarioCliente usuarioActual;
-    private String destinatario;
+    private UsuarioCliente destinatario;
     
-    public VentanaChat(UsuarioCliente usuarioActual, String destinatario) {
+    public VentanaChat(UsuarioCliente usuarioActual, UsuarioCliente destinatario) {
         this.usuarioActual = usuarioActual;
         this.destinatario = destinatario;
     }
 
     public void cargarVentana(){
-        setTitle("Chat - " + destinatario);
+        setTitle("Chat - " + destinatario.getNombre());
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         setSize(400, 600);
@@ -54,7 +54,7 @@ public class VentanaChat extends JFrame {
         });
         panelSuperior.add(botonContactos, BorderLayout.WEST);
 
-        JLabel etiquetaContacto = new JLabel(this.destinatario);
+        JLabel etiquetaContacto = new JLabel(this.destinatario.getNombre());
         etiquetaContacto.setFont(new Font("Roboto", Font.BOLD, 18));
         etiquetaContacto.setForeground(texto);
         etiquetaContacto.setHorizontalAlignment(SwingConstants.RIGHT);

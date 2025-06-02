@@ -39,8 +39,8 @@ public class VentanaContactos  {
     }
 
     // TODO hacer que mejor sea por UUID y obtener conversacion entre los dos UUIDs
-    private static void cargarChat(UsuarioCliente usuarioActual, String seleccionado) {
-        VentanaChat ventana = new VentanaChat(usuarioActual, seleccionado);
+    private static void cargarChat(UsuarioCliente usuarioActual, UsuarioCliente destinatario) {
+        VentanaChat ventana = new VentanaChat(usuarioActual, destinatario);
         ventana.cargarVentana();
         ventana.setVisible(true);
     }
@@ -100,7 +100,7 @@ public class VentanaContactos  {
         dialog.setVisible(true);
 
         if (seleccionado[0] != null) {
-            cargarChat(usuarioActual, seleccionado[0].getNombre());
+            cargarChat(usuarioActual, seleccionado[0]);
         }
     }
 
