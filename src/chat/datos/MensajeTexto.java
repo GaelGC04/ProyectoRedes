@@ -22,12 +22,24 @@ public final class MensajeTexto extends Mensaje {
 
     @Override
     public String convertirAProtocolo() {
-        return "";
+        return """
+                tipo: msj
+                remitente: %s
+                destinatario: %s
+                contenido: %s""".formatted(getRemitente(), getDestinatario(), contenido);
     }
 
     @Override
     public void convertirDeProtocolo(String protocolo) {
-
+        String[] lineas = protocolo.split("\n", 4);
+        if (!lineas[0].equals("tipo: msj")) {
+            return;
+        }
+        String remitente = lineas[1].split(": ")[1];
+        setRemitente(UUID.fromString(remitente));
+        String destinatario = lineas[2].split(": ")[1];
+        setDestinatario(UUID.fromString(destinatario));
+        contenido = lineas[3].split(": ")[1];
     }
 
     public static MensajeTexto construirConProtocolo(String protocolo) {

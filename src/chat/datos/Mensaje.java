@@ -2,7 +2,7 @@ package chat.datos;
 
 import java.util.UUID;
 
-public abstract class Mensaje {
+public abstract class Mensaje implements Protocolable {
     protected int id;
     protected UUID remitente;
     protected UUID destinatario;
@@ -38,7 +38,4 @@ public abstract class Mensaje {
     public void setDestinatario(UUID destinatario) {
         this.destinatario = destinatario;
     }
-
-    public abstract String convertirAProtocolo();
-    public abstract void convertirDeProtocolo(String protocolo);
 }
