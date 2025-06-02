@@ -1,6 +1,5 @@
 package chat;
 
-import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.net.InetAddress;

@@ -38,7 +38,7 @@ public class ServidorEscuchaTCP extends Thread {
             EntradaSalida.mostrarMensaje("Servidor conectado con cliente "+
                     socket_cli.getInetAddress()+ ":"+socket_cli.getPort()+"...\n");
             do {
-                Mensaje mensajeObj=recibeMensaje();
+                recibeMensaje();
             } while (true);
         }
         // utilizamos el catch para capturar los errores que puedan surgir

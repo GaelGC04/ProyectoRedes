@@ -48,15 +48,19 @@ public class UsuarioCliente implements Protocolable {
         List<UsuarioCliente> usuarios = new ArrayList<>();
         String[] lineas = protocolo.split(";\n");
         for (String linea : lineas) {
-            UUID uuid = UUID.fromString(linea.split(",")[0]);
-            String nombre = linea.split(",")[1];
-            usuarios.add(new UsuarioCliente(nombre, uuid));
+            try {
+                UUID uuid = UUID.fromString(linea.split(",")[0]);
+                String nombre = linea.split(",")[1];
+                usuarios.add(new UsuarioCliente(nombre, uuid));
+            } catch (Exception e) {
+                continue;
+            }
         }
         return usuarios;
     }
 
     @Override
     public String toString() {
-        return "[nombre: " + this.nombre + ", uuid: " + this.uuid + "]";
+        return this.nombre;
     }
 }
