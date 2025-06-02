@@ -11,6 +11,8 @@ public class VentanaContactos  {
         // que aqui se obtnengan los usuarios de la listad e usuarios dinamica
         String[] clientes = {"Juan", "Nepomuseno", "Aldonso", "Sodel", "Solis"};
         
+
+        // TODO hacer boton para reiniciar la ventanaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
         String seleccionado = (String) JOptionPane.showInputDialog(
             null,
             "Bienvenido " + nombreUsuarioActual + "\n ¿Con quién deseas chatear?:",
@@ -21,7 +23,9 @@ public class VentanaContactos  {
             clientes[0]
         );
 
-        cargarChat(nombreUsuarioActual, seleccionado);
+        if (seleccionado != null) {
+            cargarChat(nombreUsuarioActual, seleccionado);
+        }
     }
 
     private static void cargarChat(String nombreUsuarioActual, String seleccionado) {
