@@ -13,23 +13,17 @@ import javax.swing.*;
 import chat.datos.UsuarioCliente;
 
 public class VentanaContactos  {
+    private static ManejadorConexion manejadorConexion;
     public VentanaContactos() {
     }
 
     public static void cargarContactos(UsuarioCliente usuarioActual) throws Exception {
-        Socket socket = new Socket(InetAddress.getLocalHost(), 50000);
-        DataOutputStream salida = new DataOutputStream(socket.getOutputStream());
-
-        String protocolo = """
-                tipo: obtenerUsuarios
-                usuario: %s
-                """.formatted(usuarioActual.getUuid());
-        salida.writeUTF(protocolo);
-
-        DataInputStream entrada = new DataInputStream(socket.getInputStream());
-
-        String respuesta = entrada.readUTF();
-        List<UsuarioCliente> listaUsuarios = UsuarioCliente.convertirDeRespuestaLista(respuesta);
+        try {
+            manejadorConexion = ManejadorConexion.obtenerInstancia();
+        } catch (Exception e) {
+            manejadorConexion = ManejadorConexion.crearConexion(InetAddress.getLocalHost(), 50000);
+        }
+        List<UsuarioCliente> listaUsuarios = manejadorConexion.obtenerUsuarios(usuarioActual);
         
         if (listaUsuarios.size() != 0) {
             cargarListaContactos(listaUsuarios, usuarioActual);

@@ -7,5 +7,10 @@ public record UsuarioServidor(
         String nombre,
         UUID uuid,
         Socket socketCliente
-) {
+) implements Comparable<UsuarioServidor> {
+
+    @Override
+    public int compareTo(UsuarioServidor o) {
+        return uuid.compareTo(o.uuid);
+    }
 }

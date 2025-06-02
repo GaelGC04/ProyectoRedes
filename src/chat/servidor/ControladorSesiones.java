@@ -3,13 +3,11 @@ package chat.servidor;
 import chat.datos.UsuarioServidor;
 
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ControladorSesiones {
-    private HashMap<UUID, UsuarioServidor> sesiones;
+    private Map<UUID, UsuarioServidor> sesiones;
 
     private static ControladorSesiones controladorSesiones = null;
 
@@ -22,7 +20,7 @@ public class ControladorSesiones {
     }
 
     private ControladorSesiones() {
-        sesiones = new HashMap<>();
+        sesiones = new ConcurrentHashMap<>();
     }
 
     public void conectar(UsuarioServidor usuario) {
