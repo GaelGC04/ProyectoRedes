@@ -1,12 +1,18 @@
 package chat;
 
+import chat.gui.VentanaContactos;
+
+import javax.swing.*;
+
 public class Chat {
-    public static void main(String [] args) {
-        // Un chat simple, que se ejecute en una ventana, que sea similara la interfaz de whatsapp
-        // barra para texto, un boton para enviar el texto y un enlace para añadir archivos
-        // una vez que se añada el archivo que se envie automaticamente
-        // si es archivo que sea tcp
-        // si es mensaje que sea udp
-        // en caso de hacer udp que se muestre el proceso de envio y tiempos y bps y etc
+    public static void main(String[] args) {
+        javax.swing.SwingUtilities.invokeLater(() -> {
+            String nombre = "";
+            do {
+                nombre = JOptionPane.showInputDialog(null, "Ingresa tu nombre:", "Nombre de usuario", JOptionPane.QUESTION_MESSAGE);
+            } while (nombre == null || nombre.trim().isEmpty());
+
+            VentanaContactos.cargarContactos(nombre);
+        });
     }
 }
