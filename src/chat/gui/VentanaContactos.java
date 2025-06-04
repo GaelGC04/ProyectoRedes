@@ -18,7 +18,7 @@ public class VentanaContactos  {
         try {
             manejadorConexion = ManejadorConexion.obtenerInstancia();
         } catch (Exception e) {
-            manejadorConexion = ManejadorConexion.crearConexion(InetAddress.getLocalHost(), 50000);
+            manejadorConexion = ManejadorConexion.crearConexion(InetAddress.getLocalHost(), ManejadorConexion.PUERTO_TCP, ManejadorConexion.PUERTO_UDP);
         }
         List<UsuarioCliente> listaUsuarios = manejadorConexion.obtenerUsuarios(usuarioActual);
         

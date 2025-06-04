@@ -1,6 +1,7 @@
 package chat.servidor;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -9,8 +10,8 @@ import java.net.Socket;
 public class ServidorTCP implements Runnable {
     private ServerSocket socketServidor;
 
-    public ServidorTCP(int puerto) throws Exception {
-        socketServidor = new ServerSocket(puerto);
+    public ServidorTCP(InetAddress ip, int puerto) throws Exception {
+        socketServidor = new ServerSocket(puerto, 10, ip);
         System.out.printf("Servidor iniciado en %s:%d%n", socketServidor.getInetAddress(), puerto);
     }
 

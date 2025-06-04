@@ -17,9 +17,11 @@ import java.util.List;
 
 public class ManejadorConexion {
     private static ManejadorConexion instancia;
+    public static final int PUERTO_TCP = 50000;
+    public static final int PUERTO_UDP = 50001;
 
-    public static ManejadorConexion crearConexion(InetAddress ip, int puerto) throws Exception {
-        instancia = new ManejadorConexion(ip, puerto);
+    public static ManejadorConexion crearConexion(InetAddress ip, int puertoTcp, int puertoUdp) throws Exception {
+        instancia = new ManejadorConexion(ip, puertoTcp, puertoUdp);
         return instancia;
     }
 
@@ -35,10 +37,12 @@ public class ManejadorConexion {
     private final DatagramSocket socketUdpCliente;
     private final DataInputStream entrada;
     private final DataOutputStream salida;
+    private final int puertoUdp;
 
-    private ManejadorConexion(InetAddress ip, int puerto) throws Exception {
-        socketCliente = new Socket(ip, puerto);
+    private ManejadorConexion(InetAddress ip, int puertoTcp, int puertoUdp) throws Exception {
+        socketCliente = new Socket(ip, puertoTcp);
         socketUdpCliente = new DatagramSocket();
+        this.puertoUdp = puertoUdp;
         entrada = new DataInputStream(socketCliente.getInputStream());
         salida = new DataOutputStream(socketCliente.getOutputStream());
     }
@@ -89,7 +93,7 @@ public class ManejadorConexion {
         byte[] bytesRespuesta = new byte[2];
         String respuesta;
         do {
-            DatagramPacket paquete = new DatagramPacket(bytesProtocolo, 0, bytesProtocolo.length, socketUdpCliente.getInetAddress(), socketCliente.getPort());
+            DatagramPacket paquete = new DatagramPacket(bytesProtocolo, 0, bytesProtocolo.length, socketUdpCliente.getInetAddress(), puertoUdp);
             socketUdpCliente.send(paquete);
             DatagramPacket paqueteRespuesta = new DatagramPacket(bytesRespuesta, 0, bytesRespuesta.length);
             socketUdpCliente.receive(paqueteRespuesta);
