@@ -13,6 +13,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class ManejadorConexion implements AutoCloseable {
@@ -95,8 +96,12 @@ public class ManejadorConexion implements AutoCloseable {
         String protocoloMensaje = mensaje.convertirAProtocolo();
         short checksum = Checksum.calcularChecksum(protocoloMensaje);
         byte[] bytesChecksum = {(byte)(checksum >> 8), (byte)checksum};
-        String mensajePaquete = new String(bytesChecksum) + protocoloMensaje;
-        byte[] bytesProtocolo = mensajePaquete.getBytes();
+        byte[] bytesProtocolo = new byte[protocoloMensaje.length() + 2];
+        byte[] bytesMensaje = protocoloMensaje.getBytes();
+        bytesProtocolo[0] = bytesChecksum[0];
+        bytesProtocolo[1] = bytesChecksum[1];
+        System.arraycopy(bytesMensaje, 0, bytesProtocolo, 2, bytesProtocolo.length - 2);
+        System.out.println("Bytes a enviar: " + Arrays.toString(bytesProtocolo));
         byte[] bytesRespuesta = new byte[2];
         int intentos = 0;
         String respuesta;
