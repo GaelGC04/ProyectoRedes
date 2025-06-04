@@ -7,9 +7,11 @@ import chat.datos.MensajeArchivo;
 import chat.datos.MensajeTexto;
 import chat.datos.UsuarioCliente;
 
+import java.io.DataOutputStream;
 import java.io.File;
+import java.net.InetAddress;
+import java.net.Socket;
 import java.nio.file.Files;
-
 import java.awt.*;
 import java.awt.event.*;
 
@@ -116,6 +118,7 @@ public class VentanaChat extends JFrame {
         panelInferior.add(panelInput, BorderLayout.SOUTH);
 
         add(panelInferior, BorderLayout.SOUTH);
+
     }
 
     private void adjuntarArchivo() {
@@ -142,6 +145,27 @@ public class VentanaChat extends JFrame {
                 bytesArchivo,
                 archivo.getName()
             );
+
+
+
+            String protocolo = """
+                    tipo: archivo
+                    remitente: %s
+                    destinatario: %s
+                    nombre: %s
+                    tamanio: %d
+                    bytes: %s""".formatted(this.usuarioActual.getUuid(), this.destinatario.getUuid(), archivo.getName(), archivo.length(), bytesArchivo);
+            Socket socket;
+            try {
+                socket = new Socket(InetAddress.getLocalHost(), 50000);
+                DataOutputStream salida = new DataOutputStream(socket.getOutputStream());
+                salida.writeUTF(protocolo);
+                Thread.sleep(500);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+
             modeloMensajes.addElement(mensajeArchivo);
             this.listaMensajes.ensureIndexIsVisible(modeloMensajes.size() - 1);
         }
@@ -152,6 +176,24 @@ public class VentanaChat extends JFrame {
         if (!texto.isEmpty()) {
             this.idActual += 1;
             MensajeTexto mensajeTexto = new MensajeTexto(this.idActual, usuarioActual.getUuid(), destinatario.getUuid(), texto);
+
+
+            String protocolo = """
+                    tipo: msj
+                    remitente: %s
+                    destinatario: %s
+                    contenido: %s""".formatted(this.usuarioActual.getUuid(), this.destinatario.getUuid(), mensajeTexto);
+            Socket socket;
+            try {
+                socket = new Socket(InetAddress.getLocalHost(), 50000);
+                DataOutputStream salida = new DataOutputStream(socket.getOutputStream());
+                salida.writeUTF(protocolo);
+                Thread.sleep(500);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+
             modeloMensajes.addElement(mensajeTexto);
             this.listaMensajes.ensureIndexIsVisible(modeloMensajes.size() - 1);
             campoTexto.setText("");
@@ -240,4 +282,7 @@ public class VentanaChat extends JFrame {
             }
         });
     }
+
+
+    
 }

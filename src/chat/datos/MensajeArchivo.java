@@ -20,7 +20,7 @@ public final class MensajeArchivo extends Mensaje {
     public String convertirAProtocolo() {
         String bytesArchivo = new String(bytes);
         return """
-                tipo: msj
+                tipo: archivo
                 remitente: %s
                 destinatario: %s
                 nombre: %s
@@ -31,7 +31,7 @@ public final class MensajeArchivo extends Mensaje {
     @Override
     public boolean convertirDeProtocolo(String protocolo) {
         String[] lineas = protocolo.split("\n", 5);
-        if (!lineas[0].equals("tipo: msj")) {
+        if (!lineas[0].equals("tipo: archivo")) {
             return false;
         }
         String remitente = lineas[1].split(": ")[1];
