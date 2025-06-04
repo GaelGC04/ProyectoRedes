@@ -23,8 +23,18 @@ public class ManejadorUDP implements Runnable {
     @Override
     public void run() {
         short checksum = (short)(((datos[0] << 8) + datos[1]));
-        String entrada = new String(datos, 2, datos.length);
+        String entrada = new String(datos, 2, datos.length - 2);
+        entrada = entrada.substring(0, entrada.indexOf(0));
+        System.out.println("UDP: Nuevo mensaje: " + entrada);
         if (!checksumValido(entrada, checksum)) {
+            System.out.println("UDP: el checksum no es válido. Checksum recibido: " + checksum + ", checksum mensaje: " + Checksum.calcularChecksum(entrada));
+            byte[] bytes = "No".getBytes();
+            DatagramPacket salida = new DatagramPacket(bytes, bytes.length, paqueteEntrada.getAddress(), paqueteEntrada.getPort());
+            try {
+                socket.send(salida);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             return;
         }
         String tipoPeticion = entrada.split("\n", 2)[0];
@@ -45,13 +55,16 @@ public class ManejadorUDP implements Runnable {
                     socket.send(paqueteSalida);
                     break;
                 } while (intentos < 10);
-            } catch (Exception e) {}
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             return false;
         }
         return true;
     }
 
     private void manejarMensajeTexto(String protocolo, short checksum) {
+        System.out.println("Mensaje " + protocolo);
         String[] lineas = protocolo.split("\n", 4);
         String remitente = lineas[1].split(": ")[1];
         String destinatario = lineas[2].split(": ")[1];
@@ -74,6 +87,8 @@ public class ManejadorUDP implements Runnable {
         try {
             socket.send(paqueteSalida);
             socket.send(paqueteRespuesta);
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

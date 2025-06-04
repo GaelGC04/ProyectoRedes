@@ -1,6 +1,7 @@
 package chat;
 
 import chat.datos.UsuarioCliente;
+import chat.gui.ManejadorConexion;
 import chat.gui.VentanaContactos;
 
 import java.io.DataOutputStream;
@@ -11,6 +12,8 @@ import java.util.UUID;
 import javax.swing.*;
 
 public class Chat {
+    private static ManejadorConexion manejadorConexion;
+
     public static void main(String[] args) {
         javax.swing.SwingUtilities.invokeLater(() -> {
             String nombre = "";
@@ -22,23 +25,26 @@ public class Chat {
             } while (nombre.contains(",") || nombre.contains(";") || nombre.trim().isEmpty());
 
             if (nombre != null) {
-                UUID uuid = UUID.randomUUID();
-                String protocolo = """
-                        tipo: registro
-                        uuid: %s
-                        nombre: %s""".formatted(uuid, nombre);
-
-                Socket socket;
                 try {
-                    socket = new Socket(InetAddress.getLocalHost(), 50000);
-                    DataOutputStream salida = new DataOutputStream(socket.getOutputStream());
-                    salida.writeUTF(protocolo);
+                    manejadorConexion = ManejadorConexion.obtenerInstancia();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    try {
+                        manejadorConexion = ManejadorConexion.crearConexion(InetAddress.getLocalHost(), ManejadorConexion.PUERTO_TCP, ManejadorConexion.PUERTO_UDP);
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                }
+                UUID uuid = UUID.randomUUID();
+                UsuarioCliente usuarioActual = new UsuarioCliente(nombre, uuid);
+
+                try {
+                    manejadorConexion.conectarUsuario(usuarioActual);
                     Thread.sleep(500);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
 
-                UsuarioCliente usuarioActual = new UsuarioCliente(nombre, uuid);
                 try {
                     VentanaContactos.cargarContactos(usuarioActual);
                 } catch (Exception e) {

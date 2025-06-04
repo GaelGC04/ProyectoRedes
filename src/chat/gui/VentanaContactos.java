@@ -10,16 +10,11 @@ import chat.datos.UsuarioCliente;
 
 public class VentanaContactos  {
     private static ManejadorConexion manejadorConexion;
-
     public VentanaContactos() {
     }
 
     public static void cargarContactos(UsuarioCliente usuarioActual) throws Exception {
-        try {
-            manejadorConexion = ManejadorConexion.obtenerInstancia();
-        } catch (Exception e) {
-            manejadorConexion = ManejadorConexion.crearConexion(InetAddress.getLocalHost(), ManejadorConexion.PUERTO_TCP, ManejadorConexion.PUERTO_UDP);
-        }
+        manejadorConexion = ManejadorConexion.obtenerInstancia();
         List<UsuarioCliente> listaUsuarios = manejadorConexion.obtenerUsuarios(usuarioActual);
         
         if (listaUsuarios.size() != 0) {

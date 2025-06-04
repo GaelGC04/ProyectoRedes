@@ -15,7 +15,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ManejadorConexion {
+public class ManejadorConexion implements AutoCloseable {
     private static ManejadorConexion instancia;
     public static final int PUERTO_TCP = 50000;
     public static final int PUERTO_UDP = 50001;
@@ -42,9 +42,15 @@ public class ManejadorConexion {
     private ManejadorConexion(InetAddress ip, int puertoTcp, int puertoUdp) throws Exception {
         socketCliente = new Socket(ip, puertoTcp);
         socketUdpCliente = new DatagramSocket();
+        socketUdpCliente.setSoTimeout(5000);
         this.puertoUdp = puertoUdp;
         entrada = new DataInputStream(socketCliente.getInputStream());
         salida = new DataOutputStream(socketCliente.getOutputStream());
+    }
+
+    public void conectarUsuario(UsuarioCliente usuario) throws Exception {
+        String protocolo = usuario.convertirAProtocolo();
+        salida.writeUTF(protocolo);
     }
 
     public List<UsuarioCliente> obtenerUsuarios(UsuarioCliente usuarioActual) throws Exception {
@@ -85,20 +91,38 @@ public class ManejadorConexion {
     }
 
     public void enviarMensajeTexto(MensajeTexto mensaje) throws Exception {
+        System.out.println("Preparando envío de mensaje...");
         String protocoloMensaje = mensaje.convertirAProtocolo();
         short checksum = Checksum.calcularChecksum(protocoloMensaje);
         byte[] bytesChecksum = {(byte)(checksum >> 8), (byte)checksum};
         String mensajePaquete = new String(bytesChecksum) + protocoloMensaje;
         byte[] bytesProtocolo = mensajePaquete.getBytes();
         byte[] bytesRespuesta = new byte[2];
+        int intentos = 0;
         String respuesta;
         do {
-            DatagramPacket paquete = new DatagramPacket(bytesProtocolo, 0, bytesProtocolo.length, socketUdpCliente.getInetAddress(), puertoUdp);
+            System.out.println("Empaquetando...");
+            DatagramPacket paquete = new DatagramPacket(bytesProtocolo, bytesProtocolo.length, socketCliente.getInetAddress(), puertoUdp);
             socketUdpCliente.send(paquete);
+            System.out.println("Enviado, esperando respuesta...");
             DatagramPacket paqueteRespuesta = new DatagramPacket(bytesRespuesta, 0, bytesRespuesta.length);
             socketUdpCliente.receive(paqueteRespuesta);
             respuesta = new String(bytesRespuesta);
-        } while ("No".equals(respuesta));
+            System.out.println("Respuesta: " + respuesta);
+        } while ("No".equals(respuesta) && ++intentos < 3);
+    }
+
+    public void enviarArchivo(MensajeArchivo archivo) throws Exception {
+        String protocolo = archivo.convertirAProtocolo();
+        salida.writeUTF(protocolo);
+    }
+
+    public Socket getSocketTcp() {
+        return socketCliente;
+    }
+
+    public DatagramSocket getSocketUdp() {
+        return socketUdpCliente;
     }
 
     public static void cerrarConexion() throws Exception {
@@ -109,5 +133,10 @@ public class ManejadorConexion {
         instancia.socketCliente.close();
         instancia.socketUdpCliente.close();
         instancia = null;
+    }
+
+    @Override
+    public void close() throws Exception {
+        cerrarConexion();
     }
 }

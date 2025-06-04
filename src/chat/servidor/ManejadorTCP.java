@@ -1,6 +1,7 @@
 package chat.servidor;
 
 import chat.datos.Mensaje;
+import chat.datos.MensajeArchivo;
 import chat.datos.MensajeTexto;
 import chat.datos.UsuarioServidor;
 
@@ -53,7 +54,21 @@ public class ManejadorTCP implements Runnable {
     }
 
     private void manejarMensajeArchivo(String protocolo) {
+        String protocoloCompleto = "tipo: archivo\n" + protocolo;
+        MensajeArchivo mensajeArchivo = MensajeArchivo.construirConProtocolo(protocoloCompleto);
+        UUID uidRemitente = mensajeArchivo.getRemitente();
+        UUID uidDestinatario = mensajeArchivo.getDestinatario();
+        var sesiones = ControladorSesiones.getInstance();
+        var conversaciones = ControladorConversaciones.getInstance();
+        UsuarioServidor remitente = sesiones.obtenerUsuario(uidRemitente);
+        UsuarioServidor destinatario = sesiones.obtenerUsuario(uidDestinatario);
+        var conversacion = conversaciones.obtenerConversacion(remitente, destinatario);
+        conversacion.agregarMensaje(mensajeArchivo);
 
+        try {
+            DataOutputStream mensajeDestinatario = new DataOutputStream(destinatario.socketCliente().getOutputStream());
+            mensajeDestinatario.writeUTF(protocoloCompleto);
+        } catch (Exception e) {}
     }
 
     private void manejarListaUsuarios(String protocolo) {
