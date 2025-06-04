@@ -29,10 +29,10 @@ public final class MensajeArchivo extends Mensaje {
     }
 
     @Override
-    public void convertirDeProtocolo(String protocolo) {
+    public boolean convertirDeProtocolo(String protocolo) {
         String[] lineas = protocolo.split("\n", 5);
         if (!lineas[0].equals("tipo: msj")) {
-            return;
+            return false;
         }
         String remitente = lineas[1].split(": ")[1];
         setRemitente(UUID.fromString(remitente));
@@ -42,6 +42,7 @@ public final class MensajeArchivo extends Mensaje {
         tamanio = Integer.parseInt(lineas[4].split(": ")[1]);
         String bytesArchivoString = lineas[5].split(": ")[1].substring(0, tamanio);
         bytes = bytesArchivoString.getBytes();
+        return true;
     }
 
     public static MensajeArchivo construirConProtocolo(String protocolo) {

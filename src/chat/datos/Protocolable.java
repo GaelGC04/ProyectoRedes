@@ -1,6 +1,6 @@
 package chat.datos;
 
 public interface Protocolable {
-    void convertirDeProtocolo(String protocolo);
+    boolean convertirDeProtocolo(String protocolo);
     String convertirAProtocolo();
 }

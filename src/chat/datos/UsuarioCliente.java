@@ -30,10 +30,14 @@ public class UsuarioCliente implements Protocolable {
     }
 
     @Override
-    public void convertirDeProtocolo(String protocolo) {
+    public boolean convertirDeProtocolo(String protocolo) {
         String[] lineas = protocolo.split("\n");
-        uuid = UUID.fromString(lineas[0].split(": ")[1]);
-        nombre = lineas[1].split(": ")[1];
+        if (!lineas[0].equals("tipo: registro")) {
+            return false;
+        }
+        uuid = UUID.fromString(lineas[1].split(": ")[1]);
+        nombre = lineas[2].split(": ")[1];
+        return true;
     }
 
     @Override

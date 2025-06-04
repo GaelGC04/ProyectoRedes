@@ -92,7 +92,7 @@ public class ManejadorTCP implements Runnable {
             String protocoloMensaje = mensaje.convertirAProtocolo();
             respuesta.append(protocoloMensaje).append("\n");
             if (mensaje instanceof MensajeTexto) {
-                respuesta.append((char) 30); // Separador de mensajes de texto
+                respuesta.append("\u001E\n"); // Separador de mensajes de texto
             }
         }
         try {
