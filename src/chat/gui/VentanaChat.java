@@ -168,15 +168,20 @@ public class VentanaChat extends JFrame {
             MensajeTexto mensajeTexto = new MensajeTexto(this.idActual, usuarioActual.getUuid(), destinatario.getUuid(), texto);
 
             var conexion = ManejadorConexion.obtenerInstancia();
+            boolean enviado = false;
             try {
-                conexion.enviarMensajeTexto(mensajeTexto);
+                enviado = conexion.enviarMensajeTexto(mensajeTexto);
             } catch (Exception e) {
                 e.printStackTrace();
             }
 
-            modeloMensajes.addElement(mensajeTexto);
-            this.listaMensajes.ensureIndexIsVisible(modeloMensajes.size() - 1);
-            campoTexto.setText("");
+            if (enviado){
+                modeloMensajes.addElement(mensajeTexto);
+                this.listaMensajes.ensureIndexIsVisible(modeloMensajes.size() - 1);
+                campoTexto.setText("");
+            } else {
+                JOptionPane.showMessageDialog(null, "Mensaje no enviado", "Error", JOptionPane.ERROR_MESSAGE);
+            }
         }
     }
 

@@ -90,7 +90,7 @@ public class ManejadorConexion implements AutoCloseable {
         return mensajes;
     }
 
-    public void enviarMensajeTexto(MensajeTexto mensaje) throws Exception {
+    public boolean enviarMensajeTexto(MensajeTexto mensaje) throws Exception {
         System.out.println("Preparando envío de mensaje...");
         String protocoloMensaje = mensaje.convertirAProtocolo();
         short checksum = Checksum.calcularChecksum(protocoloMensaje);
@@ -110,6 +110,8 @@ public class ManejadorConexion implements AutoCloseable {
             respuesta = new String(bytesRespuesta);
             System.out.println("Respuesta: " + respuesta);
         } while ("No".equals(respuesta) && ++intentos < 3);
+
+        return respuesta.equals("Ok");
     }
 
     public void enviarArchivo(MensajeArchivo archivo) throws Exception {
