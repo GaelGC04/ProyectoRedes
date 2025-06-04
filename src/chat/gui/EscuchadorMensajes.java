@@ -17,18 +17,19 @@ public class EscuchadorMensajes implements AutoCloseable, Runnable {
     public EscuchadorMensajes(DefaultListModel<Mensaje> mensajes) {
         this.mensajes = mensajes;
         this.procesoMensajesTexto = new Thread(() -> {
-            try {
-                var socketCliente = ManejadorConexion.obtenerInstancia().getSocketUdp();
-                byte[] bytesEntrada = new byte[1024];
-                DatagramPacket paqueteEntrada = new DatagramPacket(bytesEntrada, bytesEntrada.length);
-                while (true) {
+
+            var socketCliente = ManejadorConexion.obtenerInstancia().getSocketUdp();
+            byte[] bytesEntrada = new byte[1024];
+            DatagramPacket paqueteEntrada = new DatagramPacket(bytesEntrada, bytesEntrada.length);
+            while (true) {
+                try {
                     socketCliente.receive(paqueteEntrada);
-                    String entrada = new String(bytesEntrada);
-                    if (!entrada.contains("tipo: msj")) {
+                    short checksum = (short) ((bytesEntrada[0] << 8) + bytesEntrada[1]);
+                    String protocolo = new String(bytesEntrada, 2, bytesEntrada.length - 2);
+                    protocolo = protocolo.substring(0, protocolo.indexOf(0));
+                    if (!protocolo.startsWith("tipo: msj")) {
                         continue;
                     }
-                    short checksum = (short)((bytesEntrada[0] << 8) + bytesEntrada[1]);
-                    String protocolo = new String(bytesEntrada, 2, bytesEntrada.length - 2);
                     if (!Checksum.verificarChecksum(protocolo, checksum)) {
                         System.out.println("Cliente: el checksum no es válido");
                         continue;
@@ -38,8 +39,11 @@ public class EscuchadorMensajes implements AutoCloseable, Runnable {
                         continue;
                     }
                     this.mensajes.addElement(mensaje);
+                } catch (Exception e) {
+                    System.out.println("Error al recibir:");
+                    e.printStackTrace();
                 }
-            } catch (Exception e) {}
+            }
         });
         this.procesoMensajesArchivo = new Thread(() -> {
             try {
@@ -53,7 +57,8 @@ public class EscuchadorMensajes implements AutoCloseable, Runnable {
                     }
                     this.mensajes.addElement(mensaje);
                 }
-            } catch (Exception e) {}
+            } catch (Exception e) {
+            }
         });
     }
 

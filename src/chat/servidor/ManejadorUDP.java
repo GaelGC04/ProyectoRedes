@@ -92,8 +92,8 @@ public class ManejadorUDP implements Runnable {
         byte[] respuestaRemitente = "Ok".getBytes();
         DatagramPacket paqueteRespuesta = new DatagramPacket(respuestaRemitente, respuestaRemitente.length, paqueteEntrada.getSocketAddress());
         try {
-            socket.send(paqueteSalida);
             socket.send(paqueteRespuesta);
+            socket.send(paqueteSalida);
         } catch (Exception e) {
             e.printStackTrace();
         }
