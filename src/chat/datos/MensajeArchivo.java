@@ -50,4 +50,12 @@ public final class MensajeArchivo extends Mensaje {
 
         return mensaje;
     }
+
+    public String getNombreArchivo(){
+        return this.nombre;
+    }
+
+    public byte[] getBytesArchivo() {
+        return this.bytes;
+    }
 }
