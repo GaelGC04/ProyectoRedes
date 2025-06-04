@@ -38,7 +38,7 @@ public class ManejadorConexion {
 
     private ManejadorConexion(InetAddress ip, int puerto) throws Exception {
         socketCliente = new Socket(ip, puerto);
-        socketUdpCliente = new DatagramSocket(puerto, ip);
+        socketUdpCliente = new DatagramSocket();
         entrada = new DataInputStream(socketCliente.getInputStream());
         salida = new DataOutputStream(socketCliente.getOutputStream());
     }
