@@ -12,6 +12,7 @@ import java.util.UUID;
 
 public class ManejadorTCP implements Runnable {
     private Socket socketCliente;
+    private volatile boolean esManejadorEscucha = false;
 
     public ManejadorTCP(Socket socketCliente) {
         this.socketCliente = socketCliente;
@@ -24,6 +25,9 @@ public class ManejadorTCP implements Runnable {
             do {
                 System.out.println("Servidor TCP: esperando peticion");
                 String protocolo = entrada.readUTF();
+                if (esManejadorEscucha) {
+                    return;
+                }
                 String tipoPeticion = protocolo.split("\n", 2)[0];
                 System.out.println("Nueva peticion: " + tipoPeticion);
                 protocolo = protocolo.substring(protocolo.indexOf("\n") + 1);
@@ -32,6 +36,7 @@ public class ManejadorTCP implements Runnable {
                     case "tipo: archivo" -> manejarMensajeArchivo(protocolo, entrada);
                     case "tipo: obtenerUsuarios" -> manejarListaUsuarios(protocolo);
                     case "tipo: obtenerChat" -> manejarObtenerChat(protocolo);
+                    case "tipo: escucharChat" -> manejarEscucharChat(protocolo);
                     default -> {
                         System.out.println("Petición desconocida:");
                         System.out.println(tipoPeticion);
@@ -40,9 +45,14 @@ public class ManejadorTCP implements Runnable {
                 }
             } while (true);
         } catch (Exception e) {
-            ControladorSesiones.getInstance().desconectarPorSocket(socketCliente);
-            System.out.println("Desconectando usuario");
-            e.printStackTrace();
+            if (!esManejadorEscucha){
+                ControladorSesiones.getInstance().desconectarPorSocket(socketCliente);
+                System.out.println("Desconectando usuario");
+                e.printStackTrace();
+            } else {
+                ControladorEscuchadores.getInstance().quitarPorSocket(socketCliente);
+                System.out.println("Escuchador removido");
+            }
         }
     }
 
@@ -76,7 +86,8 @@ public class ManejadorTCP implements Runnable {
         long tiempoInicio = System.nanoTime(); // Se obtiene tiempo preciso actual
 
         try {
-            DataOutputStream mensajeDestinatario = new DataOutputStream(destinatario.socketCliente().getOutputStream());
+            Socket socketDestinatario = ControladorEscuchadores.getInstance().obtenerSocketEscucha(uidDestinatario);
+            DataOutputStream mensajeDestinatario = new DataOutputStream(socketDestinatario.getOutputStream());
             mensajeDestinatario.writeUTF(protocoloCompleto);
 
             // Se envia entre bloques de 16 kB para poder medir el avance
@@ -186,5 +197,18 @@ public class ManejadorTCP implements Runnable {
             e.printStackTrace();
         }
 
+    }
+
+    private void manejarEscucharChat(String protocolo) {
+        UUID usuario = UUID.fromString(protocolo.split(": ")[1]);
+        ControladorEscuchadores.getInstance().agregarEscuchador(usuario, socketCliente);
+        esManejadorEscucha = true;
+        try {
+            var salida = new DataOutputStream(socketCliente.getOutputStream());
+            salida.writeUTF("ok");
+            salida.flush();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

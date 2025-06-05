@@ -8,6 +8,7 @@ import chat.datos.UsuarioServidor;
 import java.io.DataOutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.Socket;
 import java.util.Arrays;
 import java.util.UUID;
 
@@ -87,7 +88,8 @@ public class ManejadorUDP implements Runnable {
             System.out.println("Enviando confirmación");
             socket.send(paqueteRespuesta);
             System.out.println("Enviando mensaje");
-            DataOutputStream salida = new DataOutputStream(usuario2.socketCliente().getOutputStream());
+            Socket socketUsuario2 = ControladorEscuchadores.getInstance().obtenerSocketEscucha(uidDestinatario);
+            DataOutputStream salida = new DataOutputStream(socketUsuario2.getOutputStream());
             salida.writeUTF(protocolo);
             System.out.println("Enviado");
         } catch (Exception e) {

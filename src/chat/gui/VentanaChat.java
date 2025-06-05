@@ -269,7 +269,7 @@ public class VentanaChat extends JFrame {
     }
 
     private void escucharMensajes() {
-        escuchadorMensajes = new EscuchadorMensajes(modeloMensajes);
+        escuchadorMensajes = new EscuchadorMensajes(modeloMensajes, usuarioActual);
         procesoEscucha = new Thread(escuchadorMensajes);
         procesoEscucha.start();
     }
