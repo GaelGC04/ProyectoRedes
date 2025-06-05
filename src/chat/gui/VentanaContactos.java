@@ -2,7 +2,6 @@ package chat.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.net.InetAddress;
 import java.util.List;
 
 import javax.swing.*;

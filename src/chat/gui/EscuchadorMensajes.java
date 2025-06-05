@@ -45,9 +45,6 @@ public class EscuchadorMensajes implements AutoCloseable, Runnable {
                         continue;
                     }
                     if (esArchivo) {
-                        byte[] archivo = new byte[mensaje.getTamanio()];
-                        entrada.readFully(archivo);
-                        mensaje.setBytesArchivo(archivo);
                         this.mensajes.addElement(mensaje);
                     } else if (esTexto) {
                         this.mensajes.addElement(mensajeTexto);

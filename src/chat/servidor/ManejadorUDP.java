@@ -10,7 +10,6 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.Socket;
 import java.util.Arrays;
-import java.util.UUID;
 
 public class ManejadorUDP implements Runnable {
     private DatagramPacket paqueteEntrada;
@@ -69,18 +68,21 @@ public class ManejadorUDP implements Runnable {
 
     private void manejarMensajeTexto(String protocolo, short checksum) {
         System.out.println("Mensaje " + protocolo);
-        String[] lineas = protocolo.split("\n", 4);
-        String remitente = lineas[1].split(": ")[1];
-        String destinatario = lineas[2].split(": ")[1];
+        String[] lineas = protocolo.split("\n", 5);
+        /*
+        int id = Integer.parseInt(lineas[1].split(": ")[1]);
+        String remitente = lineas[2].split(": ")[1];
+        String destinatario = lineas[3].split(": ")[1];
         UUID uidRemitente = UUID.fromString(remitente);
         UUID uidDestinatario = UUID.fromString(destinatario);
-        var sesiones = ControladorSesiones.getInstance();
-        var conversaciones = ControladorConversaciones.getInstance();
-        UsuarioServidor usuario1 = sesiones.obtenerUsuario(uidRemitente);
-        UsuarioServidor usuario2 = sesiones.obtenerUsuario(uidDestinatario);
-        Conversacion conversacion = conversaciones.obtenerConversacion(usuario1, usuario2);
+        */
 
         MensajeTexto mensaje = MensajeTexto.construirConProtocolo(protocolo);
+        var sesiones = ControladorSesiones.getInstance();
+        var conversaciones = ControladorConversaciones.getInstance();
+        UsuarioServidor usuario1 = sesiones.obtenerUsuario(mensaje.getRemitente());
+        UsuarioServidor usuario2 = sesiones.obtenerUsuario(mensaje.getDestinatario());
+        Conversacion conversacion = conversaciones.obtenerConversacion(usuario1, usuario2);
         conversacion.agregarMensaje(mensaje);
         byte[] respuestaRemitente = "Ok".getBytes();
         DatagramPacket paqueteRespuesta = new DatagramPacket(respuestaRemitente, respuestaRemitente.length, paqueteEntrada.getSocketAddress());
@@ -88,7 +90,7 @@ public class ManejadorUDP implements Runnable {
             System.out.println("Enviando confirmación");
             socket.send(paqueteRespuesta);
             System.out.println("Enviando mensaje");
-            Socket socketUsuario2 = ControladorEscuchadores.getInstance().obtenerSocketEscucha(uidDestinatario);
+            Socket socketUsuario2 = ControladorEscuchadores.getInstance().obtenerSocketEscucha(usuario2.uuid());
             DataOutputStream salida = new DataOutputStream(socketUsuario2.getOutputStream());
             salida.writeUTF(protocolo);
             System.out.println("Enviado");

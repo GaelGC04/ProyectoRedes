@@ -1,10 +1,10 @@
 package chat.servidor;
 
+import chat.datos.Conversacion;
 import chat.datos.Mensaje;
 import chat.datos.MensajeArchivo;
 import chat.datos.MensajeTexto;
 import chat.datos.UsuarioServidor;
-import chat.gui.DialogoTransferenciaArchivo;
 
 import java.io.*;
 import java.net.Socket;
@@ -37,6 +37,7 @@ public class ManejadorTCP implements Runnable {
                     case "tipo: obtenerUsuarios" -> manejarListaUsuarios(protocolo);
                     case "tipo: obtenerChat" -> manejarObtenerChat(protocolo);
                     case "tipo: escucharChat" -> manejarEscucharChat(protocolo);
+                    case "tipo: descargarArchivo" -> manejarDescargarArchivo(protocolo);
                     default -> {
                         System.out.println("Petición desconocida:");
                         System.out.println(tipoPeticion);
@@ -69,8 +70,20 @@ public class ManejadorTCP implements Runnable {
         System.out.println("Procesando archivo...");
         String protocoloCompleto = "tipo: archivo\n" + protocolo;
         MensajeArchivo mensajeArchivo = MensajeArchivo.construirConProtocolo(protocoloCompleto);
-        byte[] bytesArchivo = new byte[mensajeArchivo.getTamanio()];
-        entrada.readFully(bytesArchivo);
+
+        int tamanioArchivo = mensajeArchivo.getTamanio();
+        byte[] bytesArchivo = new byte[tamanioArchivo];
+        int tamanioBloque = 16 * 1024;
+        int bytesLeidos = 0;
+
+        while (bytesLeidos < tamanioArchivo) {
+            int bytesRestantes = tamanioArchivo - bytesLeidos;
+            int bytesALeer = Math.min(tamanioBloque, bytesRestantes);
+            int leidos = entrada.read(bytesArchivo, bytesLeidos, bytesALeer);
+            if (leidos == -1) break; // Fin de stream inesperado
+            bytesLeidos += leidos;
+        }
+
         mensajeArchivo.setBytesArchivo(bytesArchivo);
         UUID uidRemitente = mensajeArchivo.getRemitente();
         UUID uidDestinatario = mensajeArchivo.getDestinatario();
@@ -88,6 +101,37 @@ public class ManejadorTCP implements Runnable {
             mensajeDestinatario.flush();
         } catch (Exception e) {
             System.out.println("Servidor TCP: error al enviar mensaje de archivo");
+            e.printStackTrace();
+        }
+    }
+
+    public void manejarDescargarArchivo(String protocolo) {
+        String[] lineas = protocolo.split("\n", 3);
+        UUID remitente = UUID.fromString(lineas[0].split(": ")[1]);
+        UUID destinatario = UUID.fromString(lineas[1].split(": ")[1]);
+        int idMensaje = Integer.parseInt(lineas[2].split(": ")[1]);
+        
+        var sesiones = ControladorSesiones.getInstance();
+        var conversaciones = ControladorConversaciones.getInstance();
+
+        UsuarioServidor usuario1 = sesiones.obtenerUsuario(remitente);
+        UsuarioServidor usuario2 = sesiones.obtenerUsuario(destinatario);
+
+        Conversacion conversacion = conversaciones.obtenerConversacion(usuario1, usuario2);
+        MensajeArchivo archivo = conversacion.descargarArchivo(idMensaje);
+        
+        int tamanioBloque = 16 * 1024;
+        byte[] bytesArchivo = archivo.getBytesArchivo();
+        long tamanioArchivo = bytesArchivo.length;
+
+        try {
+            DataOutputStream salida = new DataOutputStream(socketCliente.getOutputStream());
+            for (int offset = 0; offset < tamanioArchivo; offset += tamanioBloque) {
+                int tamanio = Math.min(tamanioBloque, (int)(tamanioArchivo - offset));
+                salida.write(bytesArchivo, offset, tamanio);
+                salida.flush();
+            }
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

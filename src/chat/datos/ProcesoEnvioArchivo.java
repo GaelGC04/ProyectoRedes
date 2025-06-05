@@ -53,32 +53,11 @@ public class ProcesoEnvioArchivo extends Thread {
 
                 // Cada vez que pase medio segundo se muestra el avance del archivo y como va y los bps
                 if ((momentoActual - tiempoRecienteAviso) > 500_000_000L || bytesEnviados == tamanioArchivo) {
-                    /*System.out.println(
-                        "------------------------------------------------------\n" +
-                        "Archivo: " + String.format("%.2f", porcentaje) + "%,\n" +
-                        "Bytes enviados: " + bytesEnviados + " de " + tamanioArchivo + " bytes,\n" +
-                        "Tasa de transferencia: " + String.format("%.2f", bps) + " bps,\n" +
-                        "Tiempo transcurrido: " + String.format("%.2f", segundosTranscurridos) + "s,\n" +
-                        "Tiempo restante estimado: " + String.format("%.2f", tiempoRestante) + "s\n" +
-                        "------------------------------------------------------"
-                    );*/
                     tiempoRecienteAviso = momentoActual;
                 }
-                Thread.sleep(500);
             }
             dialogo.cerrar();
             salida.flush();
-
-            long momentoCierre = System.nanoTime();
-            double tiempoTotal = (momentoCierre - tiempoInicio) / 1_000_000_000.0;
-            double tasaFinal = (tamanioArchivo * 8) / tiempoTotal;
-            /*System.out.println(
-                "++++++++++++++++++++++++++++++++++++++++++++++++++++++\n"+
-                "Transferencia terminada\n" +
-                "Tiempo total: " + String.format("%.2f", tiempoTotal) + "s,\n" +
-                "Tasa promedio de: " + String.format("%.2f", tasaFinal) + " bps" +
-                "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-            );*/
         } catch (Exception e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(null, "Error al enviar el archivo: " + e.getMessage());

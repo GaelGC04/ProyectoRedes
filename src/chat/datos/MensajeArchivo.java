@@ -21,24 +21,27 @@ public final class MensajeArchivo extends Mensaje {
         String bytesArchivo = new String(bytes);
         return """
                 tipo: archivo
+                id: %d
                 remitente: %s
                 destinatario: %s
                 nombre: %s
-                tamanio: %d""".formatted(getRemitente(), getDestinatario(), nombre, tamanio);
+                tamanio: %d""".formatted(getId(), getRemitente(), getDestinatario(), nombre, tamanio);
     }
 
     @Override
     public boolean convertirDeProtocolo(String protocolo) {
-        String[] lineas = protocolo.split("\n", 5);
+        String[] lineas = protocolo.split("\n", 6);
         if (!lineas[0].equals("tipo: archivo")) {
             return false;
         }
-        String remitente = lineas[1].split(": ")[1];
+        int id = Integer.parseInt(lineas[1].split(": ")[1]);
+        setId(id);
+        String remitente = lineas[2].split(": ")[1];
         setRemitente(UUID.fromString(remitente));
-        String destinatario = lineas[2].split(": ")[1];
+        String destinatario = lineas[3].split(": ")[1];
         setDestinatario(UUID.fromString(destinatario));
-        nombre = lineas[3].split(": ")[1];
-        tamanio = Integer.parseInt(lineas[4].split(": ")[1]);
+        nombre = lineas[4].split(": ")[1];
+        tamanio = Integer.parseInt(lineas[5].split(": ")[1]);
         return true;
     }
 

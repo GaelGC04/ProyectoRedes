@@ -5,14 +5,11 @@ import javax.swing.*;
 import chat.datos.Mensaje;
 import chat.datos.MensajeArchivo;
 import chat.datos.MensajeTexto;
+import chat.datos.ProcesoDescargaArchivo;
 import chat.datos.ProcesoEnvioArchivo;
 import chat.datos.UsuarioCliente;
-import chat.gui.DialogoTransferenciaArchivo;
 
-import java.io.DataOutputStream;
 import java.io.File;
-import java.net.InetAddress;
-import java.net.Socket;
 import java.nio.file.Files;
 import java.awt.*;
 import java.awt.event.*;
@@ -143,7 +140,11 @@ public class VentanaChat extends JFrame {
                 e.printStackTrace();
             }
          
-            this.idActual += 1;
+            if (modeloMensajes.isEmpty()) {
+                this.idActual = 1;
+            } else {
+                this.idActual = modeloMensajes.get(modeloMensajes.size() - 1).getId() + 1;
+            }
             MensajeArchivo mensajeArchivo = new MensajeArchivo(
                 this.idActual,
                 usuarioActual.getUuid(),
@@ -170,7 +171,11 @@ public class VentanaChat extends JFrame {
     private void enviarMensaje(ActionEvent evento) {
         String texto = campoTexto.getText().trim();
         if (!texto.isEmpty()) {
-            this.idActual += 1;
+            if (modeloMensajes.isEmpty()) {
+                this.idActual = 1;
+            } else {
+                this.idActual = modeloMensajes.get(modeloMensajes.size() - 1).getId() + 1;
+            }
             MensajeTexto mensajeTexto = new MensajeTexto(this.idActual, usuarioActual.getUuid(), destinatario.getUuid(), texto);
 
             var conexion = ManejadorConexion.obtenerInstancia();
@@ -263,6 +268,10 @@ public class VentanaChat extends JFrame {
 
                     if (respuesta == JFileChooser.APPROVE_OPTION) {
                         try {
+                            ProcesoDescargaArchivo procesoDescarga = new ProcesoDescargaArchivo(mensajeArchivo);
+                            Thread hiloDescarga = new Thread(procesoDescarga);
+                            hiloDescarga.start();
+                            hiloDescarga.join();
                             Files.write(chooser.getSelectedFile().toPath(), mensajeArchivo.getBytesArchivo());
                             JOptionPane.showMessageDialog(listaMensajes, "El archivo ha sido guardado con éxito");
                         } catch (Exception e) {

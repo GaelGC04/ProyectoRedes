@@ -25,22 +25,25 @@ public final class MensajeTexto extends Mensaje {
         String contenidoFormateado = contenido.replace("\u001E", "\\x1E");
         return """
                 tipo: msj
+                id: %d
                 remitente: %s
                 destinatario: %s
-                contenido: %s""".formatted(getRemitente(), getDestinatario(), contenidoFormateado);
+                contenido: %s""".formatted(getId(), getRemitente(), getDestinatario(), contenidoFormateado);
     }
 
     @Override
     public boolean convertirDeProtocolo(String protocolo) {
-        String[] lineas = protocolo.split("\n", 4);
+        String[] lineas = protocolo.split("\n", 5);
         if (!lineas[0].equals("tipo: msj")) {
             return false;
         }
-        String remitente = lineas[1].split(": ")[1];
+        int id = Integer.parseInt(lineas[1].split(": ")[1]);
+        setId(id);
+        String remitente = lineas[2].split(": ")[1];
         setRemitente(UUID.fromString(remitente));
-        String destinatario = lineas[2].split(": ")[1];
+        String destinatario = lineas[3].split(": ")[1];
         setDestinatario(UUID.fromString(destinatario));
-        contenido = lineas[3].split(": ")[1];
+        contenido = lineas[4].split(": ")[1];
         contenido = contenido.replace("\\x1E", "\u001E");
         return true;
     }

@@ -22,6 +22,21 @@ public class Conversacion {
         conversacion = Collections.synchronizedList(new ArrayList<>());
     }
 
+    public MensajeArchivo descargarArchivo(int idMensaje) {
+        for (Mensaje mensaje : conversacion) {
+            if (mensaje.getId() == idMensaje) {
+                if (mensaje instanceof MensajeTexto texto) {
+                    System.out.println(texto.getContenido());
+                    System.out.println(texto.getContenido());
+                    System.out.println(texto.getContenido());
+                    System.out.println(texto.getContenido());
+                }
+                return (MensajeArchivo) mensaje;
+            }
+        }
+        return null;
+    }
+
     public void agregarMensaje(Mensaje mensaje) {
         conversacion.add(mensaje);
     }

@@ -151,4 +151,8 @@ public class ManejadorConexion implements AutoCloseable {
     public void close() throws Exception {
         cerrarConexion();
     }
+
+    public void descargarArchivo() {
+        
+    }
 }
