@@ -4,9 +4,7 @@ import chat.datos.UsuarioCliente;
 import chat.gui.ManejadorConexion;
 import chat.gui.VentanaContactos;
 
-import java.io.DataOutputStream;
 import java.net.InetAddress;
-import java.net.Socket;
 import java.util.UUID;
 
 import javax.swing.*;

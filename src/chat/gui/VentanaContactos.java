@@ -16,7 +16,6 @@ public class VentanaContactos  {
     public static void cargarContactos(UsuarioCliente usuarioActual) throws Exception {
         manejadorConexion = ManejadorConexion.obtenerInstancia();
         List<UsuarioCliente> listaUsuarios = manejadorConexion.obtenerUsuarios(usuarioActual);
-        
         if (listaUsuarios.size() != 0) {
             cargarListaContactos(listaUsuarios, usuarioActual);
         } else {
