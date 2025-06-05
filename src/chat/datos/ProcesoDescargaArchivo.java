@@ -60,7 +60,6 @@ public class ProcesoDescargaArchivo extends Thread {
                 double tiempoRestante = tiempoTotalEstimado - segundosTranscurridos;
 
                 dialogo.actualizar(porcentaje, bytesRecibidos, tamanioArchivo, bps, segundosTranscurridos, tiempoRestante);
-                System.out.println("bytesLeidos: " + bytesLeidos);
 
                 if ((momentoActual - tiempoRecienteAviso) > 500_000_000L || bytesRecibidos == tamanioArchivo) {
                     tiempoRecienteAviso = momentoActual;

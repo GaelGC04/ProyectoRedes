@@ -69,13 +69,6 @@ public class ManejadorUDP implements Runnable {
     private void manejarMensajeTexto(String protocolo, short checksum) {
         System.out.println("Mensaje " + protocolo);
         String[] lineas = protocolo.split("\n", 5);
-        /*
-        int id = Integer.parseInt(lineas[1].split(": ")[1]);
-        String remitente = lineas[2].split(": ")[1];
-        String destinatario = lineas[3].split(": ")[1];
-        UUID uidRemitente = UUID.fromString(remitente);
-        UUID uidDestinatario = UUID.fromString(destinatario);
-        */
 
         MensajeTexto mensaje = MensajeTexto.construirConProtocolo(protocolo);
         var sesiones = ControladorSesiones.getInstance();
