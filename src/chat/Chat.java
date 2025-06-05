@@ -27,10 +27,16 @@ public class Chat {
                     manejadorConexion = ManejadorConexion.obtenerInstancia();
                 } catch (Exception e) {
                     e.printStackTrace();
+                    InetAddress ip;
                     try {
-                        manejadorConexion = ManejadorConexion.crearConexion(InetAddress.getLocalHost(), ManejadorConexion.PUERTO_TCP, ManejadorConexion.PUERTO_UDP);
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
+                        try {
+                            ip = InetAddress.getByName(args[0]);
+                        } catch (Exception e1) {
+                            ip = InetAddress.getLocalHost();            
+                        }
+                        manejadorConexion = ManejadorConexion.crearConexion(ip, ManejadorConexion.PUERTO_TCP, ManejadorConexion.PUERTO_UDP);
+                    } catch (Exception e2) {
+                        e2.printStackTrace();
                     }
                 }
                 UUID uuid = UUID.randomUUID();
