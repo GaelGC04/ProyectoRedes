@@ -13,6 +13,8 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.nio.file.Files;
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.awt.event.*;
 
 public class VentanaChat extends JFrame {
@@ -28,10 +30,14 @@ public class VentanaChat extends JFrame {
     private UsuarioCliente usuarioActual;
     private UsuarioCliente destinatario;
     
+    private ManejadorConexion conexion;
+
     public VentanaChat(UsuarioCliente usuarioActual, UsuarioCliente destinatario) {
         this.usuarioActual = usuarioActual;
         this.destinatario = destinatario;
         this.idActual = 0;
+
+        this.conexion = ManejadorConexion.obtenerInstancia();
     }
 
     public void cargarVentana(){
@@ -122,7 +128,21 @@ public class VentanaChat extends JFrame {
         panelInferior.add(panelInput, BorderLayout.SOUTH);
 
         add(panelInferior, BorderLayout.SOUTH);
+<<<<<<< HEAD
         escucharMensajes();
+=======
+
+        List<Mensaje> listaMensajes;
+        try {
+            listaMensajes = this.conexion.obtenerMensajes(this.usuarioActual, this.destinatario);
+        } catch (Exception e) {
+            listaMensajes = new ArrayList<>();
+            e.printStackTrace();
+        }
+        for (Mensaje mensaje : listaMensajes) {
+            System.out.println(mensaje);
+        }
+>>>>>>> 7217b4a (Preparando para hacer pull)
     }
 
     private void adjuntarArchivo() {
@@ -149,9 +169,16 @@ public class VentanaChat extends JFrame {
                 bytesArchivo,
                 archivo.getName()
             );
+<<<<<<< HEAD
             var conexion = ManejadorConexion.obtenerInstancia();
             try {
                 conexion.enviarArchivo(mensajeArchivo);
+=======
+
+            // Se envia el archivo
+            try {
+                //this.conexion.enviarMensajeArchivo(mensajeArchivo);
+>>>>>>> 7217b4a (Preparando para hacer pull)
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -167,14 +194,21 @@ public class VentanaChat extends JFrame {
             this.idActual += 1;
             MensajeTexto mensajeTexto = new MensajeTexto(this.idActual, usuarioActual.getUuid(), destinatario.getUuid(), texto);
 
+<<<<<<< HEAD
             var conexion = ManejadorConexion.obtenerInstancia();
             boolean enviado = false;
             try {
                 enviado = conexion.enviarMensajeTexto(mensajeTexto);
+=======
+            // Se envia el mensaje
+            try {
+                this.conexion.enviarMensajeTexto(mensajeTexto);
+>>>>>>> 7217b4a (Preparando para hacer pull)
             } catch (Exception e) {
                 e.printStackTrace();
             }
 
+<<<<<<< HEAD
             if (enviado){
                 modeloMensajes.addElement(mensajeTexto);
                 this.listaMensajes.ensureIndexIsVisible(modeloMensajes.size() - 1);
@@ -182,6 +216,11 @@ public class VentanaChat extends JFrame {
             } else {
                 JOptionPane.showMessageDialog(null, "Mensaje no enviado", "Error", JOptionPane.ERROR_MESSAGE);
             }
+=======
+            modeloMensajes.addElement(mensajeTexto);
+            this.listaMensajes.ensureIndexIsVisible(modeloMensajes.size() - 1);
+            campoTexto.setText("");
+>>>>>>> 7217b4a (Preparando para hacer pull)
         }
     }
 
