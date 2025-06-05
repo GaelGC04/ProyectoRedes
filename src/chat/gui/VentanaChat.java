@@ -5,7 +5,9 @@ import javax.swing.*;
 import chat.datos.Mensaje;
 import chat.datos.MensajeArchivo;
 import chat.datos.MensajeTexto;
+import chat.datos.ProcesoEnvioArchivo;
 import chat.datos.UsuarioCliente;
+import chat.gui.DialogoTransferenciaArchivo;
 
 import java.io.DataOutputStream;
 import java.io.File;
@@ -149,12 +151,16 @@ public class VentanaChat extends JFrame {
                 bytesArchivo,
                 archivo.getName()
             );
+            
+            new ProcesoEnvioArchivo(mensajeArchivo).start();
+            /* 
             var conexion = ManejadorConexion.obtenerInstancia();
             try {
                 conexion.enviarArchivo(mensajeArchivo);
             } catch (Exception e) {
                 e.printStackTrace();
             }
+            */
 
             modeloMensajes.addElement(mensajeArchivo);
             this.listaMensajes.ensureIndexIsVisible(modeloMensajes.size() - 1);

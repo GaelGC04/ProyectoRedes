@@ -81,68 +81,11 @@ public class ManejadorTCP implements Runnable {
         var conversacion = conversaciones.obtenerConversacion(remitente, destinatario);
         conversacion.agregarMensaje(mensajeArchivo);
 
-        // Esta parte es la que se usa para poder medir la tasa de transferencia bps
-        long tamanioArchivo = bytesArchivo.length; // Se obtiene el tamaño del archivo enviado
-        long tiempoInicio = System.nanoTime(); // Se obtiene tiempo preciso actual
-
         try {
             Socket socketDestinatario = ControladorEscuchadores.getInstance().obtenerSocketEscucha(uidDestinatario);
             DataOutputStream mensajeDestinatario = new DataOutputStream(socketDestinatario.getOutputStream());
             mensajeDestinatario.writeUTF(protocoloCompleto);
-
-            // Se envia entre bloques de 16 kB para poder medir el avance
-            int tamanioBloque = 16 * 1024;
-            long bytesEnviados = 0;
-            long tiempoRecienteAviso = System.nanoTime();
-            
-            // Se hace la instancia del jdialog para que se muestre el envío para el usuario que envie el archivo
-            DialogoTransferenciaArchivo dialogo = DialogoTransferenciaArchivo.mostrar(null, mensajeArchivo.getNombreArchivo(), tamanioArchivo);
-            
-            for (int iteradorArchivo = 0; iteradorArchivo < tamanioArchivo; iteradorArchivo += tamanioBloque) {
-                int tamanio = Math.min(tamanioBloque, (int)(tamanioArchivo - iteradorArchivo));
-                mensajeDestinatario.write(bytesArchivo, iteradorArchivo, tamanio);
-                bytesEnviados += tamanio;
-
-                // Se calcula el tiempo y la tasa de transferencia
-                long momentoActual = System.nanoTime();
-                double segundosTranscurridos = (momentoActual - tiempoInicio) / 1_000_000_000.0; // Esto es por que son nanosegundos
-                double bps = (bytesEnviados * 8) / segundosTranscurridos;
-                double porcentaje = (bytesEnviados * 100.0) / tamanioArchivo;
-                double tiempoTotalEstimado = (tamanioArchivo * segundosTranscurridos) / bytesEnviados;
-                double tiempoRestante = tiempoTotalEstimado - segundosTranscurridos;
-
-                // Se actualiza el jdialog mostrando el progreso nuevo
-                dialogo.actualizar(porcentaje, bytesEnviados, tamanioArchivo, bps, segundosTranscurridos, tiempoRestante);
-
-                // Cada vez que pase medio segundo se muestra el avance del archivo y como va y los bps
-                if ((momentoActual - tiempoRecienteAviso) > 500_000_000L || bytesEnviados == tamanioArchivo) {
-                    System.out.println(
-                        "------------------------------------------------------\n" +
-                        "Archivo: " + String.format("%.2f", porcentaje) + "%,\n" +
-                        "Bytes enviados: " + bytesEnviados + " de " + tamanioArchivo + " bytes,\n" +
-                        "Tasa de transferencia: " + String.format("%.2f", bps) + " bps,\n" +
-                        "Tiempo transcurrido: " + String.format("%.2f", segundosTranscurridos) + "s,\n" +
-                        "Tiempo restante estimado: " + String.format("%.2f", tiempoRestante) + "s\n" +
-                        "------------------------------------------------------"
-                    );
-                    tiempoRecienteAviso = momentoActual;
-                }
-                Thread.sleep(500);
-            }
-            // Se duerme el jdialgo
-            dialogo.cerrar();
             mensajeDestinatario.flush();
-
-            long momentoCierre = System.nanoTime();
-            double tiempoTotal = (momentoCierre - tiempoInicio) / 1_000_000_000.0;
-            double tasaFinal = (tamanioArchivo * 8) / tiempoTotal;
-            System.out.println(
-                "++++++++++++++++++++++++++++++++++++++++++++++++++++++\n"+
-                "Transferencia terminada\n" +
-                "Tiempo total: " + String.format("%.2f", tiempoTotal) + "s,\n" +
-                "Tasa promedio de: " + String.format("%.2f", tasaFinal) + " bps" +
-                "++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-            );
         } catch (Exception e) {
             System.out.println("Servidor TCP: error al enviar mensaje de archivo");
             e.printStackTrace();
