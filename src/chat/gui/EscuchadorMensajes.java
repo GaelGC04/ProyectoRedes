@@ -19,7 +19,7 @@ public class EscuchadorMensajes implements AutoCloseable, Runnable {
         this.procesoMensajesArchivo = new Thread(() -> {
             try {
                 var socketCliente = ManejadorConexion.obtenerInstancia().getSocketTcp();
-                socketCliente.setSoTimeout(1000);
+                // socketCliente.setSoTimeout(1000);
                 var entrada = new DataInputStream(socketCliente.getInputStream());
                 while (escuchar) {
                     String respuesta = entrada.readUTF();
