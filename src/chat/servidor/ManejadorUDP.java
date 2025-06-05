@@ -5,6 +5,7 @@ import chat.datos.Conversacion;
 import chat.datos.MensajeTexto;
 import chat.datos.UsuarioServidor;
 
+import java.io.DataOutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.util.Arrays;
@@ -80,21 +81,15 @@ public class ManejadorUDP implements Runnable {
 
         MensajeTexto mensaje = MensajeTexto.construirConProtocolo(protocolo);
         conversacion.agregarMensaje(mensaje);
-
-        byte[] bytesChecksum = {(byte)(checksum >> 8), (byte)checksum};
-        byte[] bytesProtocolo = protocolo.getBytes();
-        byte[] salidaDestinatario = new byte[protocolo.length() + 2];
-        salidaDestinatario[0] = bytesChecksum[0];
-        salidaDestinatario[1] = bytesChecksum[1];
-        System.arraycopy(bytesProtocolo, 0, salidaDestinatario, 2, salidaDestinatario.length - 2);
-
-        DatagramPacket paqueteSalida = new DatagramPacket(salidaDestinatario, salidaDestinatario.length, usuario2.socketCliente().getRemoteSocketAddress());
         byte[] respuestaRemitente = "Ok".getBytes();
         DatagramPacket paqueteRespuesta = new DatagramPacket(respuestaRemitente, respuestaRemitente.length, paqueteEntrada.getSocketAddress());
         try {
+            System.out.println("Enviando confirmación");
             socket.send(paqueteRespuesta);
-            Thread.sleep(500);
-            socket.send(paqueteSalida);
+            System.out.println("Enviando mensaje");
+            DataOutputStream salida = new DataOutputStream(usuario2.socketCliente().getOutputStream());
+            salida.writeUTF(protocolo);
+            System.out.println("Enviado");
         } catch (Exception e) {
             e.printStackTrace();
         }

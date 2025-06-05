@@ -1,70 +1,47 @@
 package chat.gui;
 
-import chat.checksum.Checksum;
 import chat.datos.Mensaje;
 import chat.datos.MensajeArchivo;
 import chat.datos.MensajeTexto;
 
 import javax.swing.*;
 import java.io.DataInputStream;
-import java.net.DatagramPacket;
 
 public class EscuchadorMensajes implements AutoCloseable, Runnable {
-    private final Thread procesoMensajesTexto;
     private final Thread procesoMensajesArchivo;
     private final DefaultListModel<Mensaje> mensajes;
 
     public EscuchadorMensajes(DefaultListModel<Mensaje> mensajes) {
         this.mensajes = mensajes;
-        this.procesoMensajesTexto = new Thread(() -> {
-
-            var socketCliente = ManejadorConexion.obtenerInstancia().getSocketUdp();
-            byte[] bytesEntrada = new byte[1024];
-            DatagramPacket paqueteEntrada = new DatagramPacket(bytesEntrada, bytesEntrada.length);
-            while (true) {
-                try {
-                    socketCliente.receive(paqueteEntrada);
-                    short checksum = (short) ((bytesEntrada[0] << 8) | (bytesEntrada[1] & 0xFF));
-                    int tamanioReal = paqueteEntrada.getLength();
-                    String protocolo = new String(bytesEntrada, 2, tamanioReal - 2);
-                    protocolo = protocolo.substring(0, protocolo.indexOf(0));
-                    if (!protocolo.startsWith("tipo: msj")) {
-                        continue;
-                    }
-                    if (!Checksum.verificarChecksum(protocolo, checksum)) {
-                        System.out.println("Cliente: el checksum no es válido");
-                        continue;
-                    }
-                    var mensaje = new MensajeTexto(0, null, null, null);
-                    if (!mensaje.convertirDeProtocolo(protocolo)) {
-                        continue;
-                    }
-                    this.mensajes.addElement(mensaje);
-                } catch (Exception e) {
-                    System.out.println("Error al recibir:");
-                    e.printStackTrace();
-                }
-            }
-        });
         this.procesoMensajesArchivo = new Thread(() -> {
             try {
                 var socketCliente = ManejadorConexion.obtenerInstancia().getSocketTcp();
                 var entrada = new DataInputStream(socketCliente.getInputStream());
                 while (true) {
+                    System.out.println("Escuchador cliente TCP: esperando mensaje...");
                     String respuesta = entrada.readUTF();
+                    System.out.println("Escuchador cliente TCP: mensaje: " + respuesta);
                     var mensaje = new MensajeArchivo(0, null, null, new byte[0], null);
-                    if (!mensaje.convertirDeProtocolo(respuesta)) {
+                    var mensajeTexto = new MensajeTexto(0, null, null, null);
+                    boolean esArchivo = mensaje.convertirDeProtocolo(respuesta);
+                    boolean esTexto = mensajeTexto.convertirDeProtocolo(respuesta);
+                    if (!esArchivo && !esTexto) {
                         continue;
                     }
-                    this.mensajes.addElement(mensaje);
+                    if (esArchivo) {
+                        this.mensajes.addElement(mensaje);
+                    } else if (esTexto) {
+                        this.mensajes.addElement(mensajeTexto);
+                    }
                 }
             } catch (Exception e) {
+                System.out.println("Escuchador cliente: Error en TCP");
+                e.printStackTrace();
             }
         });
     }
 
     public void escucharMensajes() {
-        procesoMensajesTexto.start();
         procesoMensajesArchivo.start();
     }
 
@@ -76,6 +53,5 @@ public class EscuchadorMensajes implements AutoCloseable, Runnable {
     @Override
     public void close() throws Exception {
         procesoMensajesArchivo.interrupt();
-        procesoMensajesTexto.interrupt();
     }
 }
