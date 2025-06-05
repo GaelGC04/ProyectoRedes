@@ -81,6 +81,7 @@ public class ManejadorConexion implements AutoCloseable {
                 mensajeActual = mensajeActual.substring(mensajeActual.indexOf("\u001E")).split("\n", 2)[1];
             } else if (mensajeActual.startsWith("tipo: archivo")) {
                 MensajeArchivo archivo = MensajeArchivo.construirConProtocolo(mensajeActual);
+                archivo.setBytesArchivo(entrada.readAllBytes());
                 mensajes.add(archivo);
                 int indicePosicionFin = archivo.convertirAProtocolo().length();
                 mensajeActual = mensajeActual.substring(indicePosicionFin);
@@ -121,7 +122,11 @@ public class ManejadorConexion implements AutoCloseable {
 
     public void enviarArchivo(MensajeArchivo archivo) throws Exception {
         String protocolo = archivo.convertirAProtocolo();
+        System.out.println("Enviando archivo...");
         salida.writeUTF(protocolo);
+        salida.write(archivo.getBytesArchivo());
+        salida.flush();
+        System.out.println("Archivo enviado");
     }
 
     public Socket getSocketTcp() {

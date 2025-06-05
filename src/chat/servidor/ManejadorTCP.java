@@ -5,8 +5,7 @@ import chat.datos.MensajeArchivo;
 import chat.datos.MensajeTexto;
 import chat.datos.UsuarioServidor;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
+import java.io.*;
 import java.net.Socket;
 import java.util.UUID;
 
@@ -22,12 +21,14 @@ public class ManejadorTCP implements Runnable {
         try(Socket cliente = this.socketCliente) {
             DataInputStream entrada = new DataInputStream(cliente.getInputStream());
             do {
+                System.out.println("Servidor TCP: esperando peticion");
                 String protocolo = entrada.readUTF();
                 String tipoPeticion = protocolo.split("\n", 2)[0];
+                System.out.println("Nueva peticion: " + tipoPeticion);
                 protocolo = protocolo.substring(protocolo.indexOf("\n") + 1);
                 switch (tipoPeticion) {
                     case "tipo: registro" -> manejarRegistro(protocolo);
-                    case "tipo: archivo" -> manejarMensajeArchivo(protocolo);
+                    case "tipo: archivo" -> manejarMensajeArchivo(protocolo, entrada);
                     case "tipo: obtenerUsuarios" -> manejarListaUsuarios(protocolo);
                     case "tipo: obtenerChat" -> manejarObtenerChat(protocolo);
                     default -> {
@@ -53,9 +54,13 @@ public class ManejadorTCP implements Runnable {
         ControladorSesiones.getInstance().conectar(usuarioServidor);
     }
 
-    private void manejarMensajeArchivo(String protocolo) {
+    private void manejarMensajeArchivo(String protocolo, DataInputStream entrada) throws Exception {
+        System.out.println("Procesando archivo...");
         String protocoloCompleto = "tipo: archivo\n" + protocolo;
         MensajeArchivo mensajeArchivo = MensajeArchivo.construirConProtocolo(protocoloCompleto);
+        byte[] bytesArchivo = new byte[mensajeArchivo.getTamanio()];
+        entrada.readFully(bytesArchivo);
+        mensajeArchivo.setBytesArchivo(bytesArchivo);
         UUID uidRemitente = mensajeArchivo.getRemitente();
         UUID uidDestinatario = mensajeArchivo.getDestinatario();
         var sesiones = ControladorSesiones.getInstance();
@@ -68,7 +73,12 @@ public class ManejadorTCP implements Runnable {
         try {
             DataOutputStream mensajeDestinatario = new DataOutputStream(destinatario.socketCliente().getOutputStream());
             mensajeDestinatario.writeUTF(protocoloCompleto);
-        } catch (Exception e) {}
+            mensajeDestinatario.write(bytesArchivo);
+            mensajeDestinatario.flush();
+        } catch (Exception e) {
+            System.out.println("Servidor TCP: error al enviar mensaje de archivo");
+            e.printStackTrace();
+        }
     }
 
     private void manejarListaUsuarios(String protocolo) {
@@ -102,19 +112,22 @@ public class ManejadorTCP implements Runnable {
         var usuario1 = controlador.obtenerUsuario(remitente);
         var usuario2 = controlador.obtenerUsuario(destinatario);
         var conversacion = ControladorConversaciones.getInstance().obtenerConversacion(usuario1, usuario2);
-        var respuesta = new StringBuilder();
-        for (Mensaje mensaje : conversacion.obtenerMensajes()) {
-            String protocoloMensaje = mensaje.convertirAProtocolo();
-            respuesta.append(protocoloMensaje).append("\n");
-            if (mensaje instanceof MensajeTexto) {
-                respuesta.append("\u001E\n"); // Separador de mensajes de texto
-            }
-        }
+        DataOutputStream dataOutputStream = null;
         try {
-            DataOutputStream dataOutputStream = new DataOutputStream(this.socketCliente.getOutputStream());
-            dataOutputStream.writeUTF(respuesta.toString());
-        } catch (Exception e) {
+            dataOutputStream = new DataOutputStream(this.socketCliente.getOutputStream());
+            for (Mensaje mensaje : conversacion.obtenerMensajes()) {
+                String protocoloMensaje = mensaje.convertirAProtocolo();
+                dataOutputStream.writeUTF(protocoloMensaje);
+                if (mensaje instanceof MensajeTexto) {
+                    dataOutputStream.writeUTF("\u001E\n"); // Separador de mensajes de texto
+                } else if (mensaje instanceof MensajeArchivo archivo) {
+                    dataOutputStream.write(archivo.getBytesArchivo());
+                }
+            }
+            dataOutputStream.flush();
+        } catch (IOException e) {
             e.printStackTrace();
         }
+
     }
 }

@@ -24,8 +24,7 @@ public final class MensajeArchivo extends Mensaje {
                 remitente: %s
                 destinatario: %s
                 nombre: %s
-                tamanio: %d
-                bytes: %s""".formatted(getRemitente(), getDestinatario(), nombre, tamanio, bytesArchivo);
+                tamanio: %d""".formatted(getRemitente(), getDestinatario(), nombre, tamanio);
     }
 
     @Override
@@ -40,8 +39,6 @@ public final class MensajeArchivo extends Mensaje {
         setDestinatario(UUID.fromString(destinatario));
         nombre = lineas[3].split(": ")[1];
         tamanio = Integer.parseInt(lineas[4].split(": ")[1]);
-        String bytesArchivoString = lineas[5].split(": ")[1].substring(0, tamanio);
-        bytes = bytesArchivoString.getBytes();
         return true;
     }
 
@@ -58,5 +55,13 @@ public final class MensajeArchivo extends Mensaje {
 
     public byte[] getBytesArchivo() {
         return this.bytes;
+    }
+
+    public int getTamanio() {
+        return tamanio;
+    }
+
+    public void setBytesArchivo(byte[] bytes) {
+        this.bytes = bytes;
     }
 }
