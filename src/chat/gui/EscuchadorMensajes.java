@@ -24,8 +24,9 @@ public class EscuchadorMensajes implements AutoCloseable, Runnable {
             while (true) {
                 try {
                     socketCliente.receive(paqueteEntrada);
-                    short checksum = (short) ((bytesEntrada[0] << 8) + bytesEntrada[1]);
-                    String protocolo = new String(bytesEntrada, 2, bytesEntrada.length - 2);
+                    short checksum = (short) ((bytesEntrada[0] << 8) | (bytesEntrada[1] & 0xFF));
+                    int tamanioReal = paqueteEntrada.getLength();
+                    String protocolo = new String(bytesEntrada, 2, tamanioReal - 2);
                     protocolo = protocolo.substring(0, protocolo.indexOf(0));
                     if (!protocolo.startsWith("tipo: msj")) {
                         continue;

@@ -23,9 +23,9 @@ public class ManejadorUDP implements Runnable {
 
     @Override
     public void run() {
-        short checksum = (short)(((datos[0] << 8) + datos[1]));
-        String entrada = new String(datos, 2, datos.length - 2);
-        entrada = entrada.substring(0, entrada.indexOf(0));
+        short checksum = (short)(((datos[0] << 8) | (datos[1] & 0xFF)));
+        int tamanioReal = paqueteEntrada.getLength();
+        String entrada = new String(datos, 2, tamanioReal - 2);
         System.out.println("UDP: Nuevo mensaje: " + entrada);
         if (!checksumValido(entrada, checksum)) {
             System.out.println("UDP: el checksum no es válido. Checksum recibido: " + checksum + ", checksum mensaje: " + Checksum.calcularChecksum(entrada));
@@ -93,6 +93,7 @@ public class ManejadorUDP implements Runnable {
         DatagramPacket paqueteRespuesta = new DatagramPacket(respuestaRemitente, respuestaRemitente.length, paqueteEntrada.getSocketAddress());
         try {
             socket.send(paqueteRespuesta);
+            Thread.sleep(500);
             socket.send(paqueteSalida);
         } catch (Exception e) {
             e.printStackTrace();
